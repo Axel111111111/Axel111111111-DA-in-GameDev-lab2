@@ -66,13 +66,46 @@
 
 ## Задание 3
 ### Самостоятельно разработать сценарий воспроизведения звукового сопровождения в Unity в зависимости от изменения считанных данных в задании 2
-Изменяем диапазон данных в коде, чтобы одни подходили под диапазон loss.
 
-Изменяем количество колонок в соответствии с новыми данными.
+Bзменил код скрипта, отвечающий за воспроизведение звуков, в зависимости от данных.
 
-using System.Collections; using System.Collections.Generic; using UnityEngine; using UnityEngine.Networking; using SimpleJSON;
+       void Update()
+    {
+        if (dataSet.Count == 0 || dataSet.Count <= i){
+            return;
+        }
+        
+        if (dataSet["Mon_" + i.ToString()] <= 200 & statusStart == false & 1 != dataSet.Count){
+            StartCoroutine(PlaySelectAudioGood());
+            Debug.Log(dataSet["Mon_" + i.ToString()]);
+        }
 
-public class NewBehaviourScript : MonoBehaviour { public AudioClip goodSpeak; public AudioClip normalSpeak; public AudioClip badSpeak; private AudioSource selectAudio; private Dictionary<string,float> dataSet = new Dictionary<string, float>(); private bool statusStart = false; private int i = 1;
+        if (dataSet["Mon_" + i.ToString()] > 200 & dataSet["Mon_" + i.ToString()] < 1000 & statusStart == false & 1 != dataSet.Count){
+            StartCoroutine(PlaySelectAudioNormal());
+            Debug.Log(dataSet["Mon_" + i.ToString()]);
+        }
+        
+        if (dataSet["Mon_" + i.ToString()] >= 1000 & statusStart == false & 1 != dataSet.Count){
+            StartCoroutine(PlaySelectAudioBad());
+            Debug.Log(dataSet["Mon_" + i.ToString()]);
+        }
+    }
+
+    IEnumerator GoogleSheets()
+    {
+        UnityWebRequest curentResp = UnityWebRequest.Get("https://sheets.googleapis.com/v4/spreadsheets/1uGsokpbfe9YWQUjgl2YnhgCUdCIHzmnJGHz_dhqLyhQ/values/Лист1?key=AIzaSyAX8ysCLFqIPEyPKk8-n1CFU4pRrW5gpiQ");
+        yield return curentResp.SendWebRequest();
+        string rawResp = curentResp.downloadHandler.text;
+        var rawJson = JSON.Parse(rawResp);
+        foreach (var itemRawJson in rawJson["values"])
+        {
+            var parseJson = JSON.Parse(itemRawJson.ToString());
+            var selectRow = parseJson[0].AsStringList;
+            dataSet.Add(("Mon_" + selectRow[0]), float.Parse(selectRow[1]));  // selectRow[2] -> selectRow[1]
+        }
+    }
+
+![3](https://user-images.githubusercontent.com/49406824/195114145-d64ac4e7-7e70-4548-a134-fe11998a6ac4.png)
 
 ## Выводы
 
